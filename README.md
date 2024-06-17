@@ -6,6 +6,6 @@
 * **Beraud Mélanie-List of Publications_2024.pdf:** List of pulications, posters and presentatons in english.
 * **Professional Experiences-Beraud Mélanie_2024.pdf:** List of professionnal experiences and detailed description in english.
 
-* In Fench:
+*En Français:*
 * **Beraud_Bioinformatique_CV_FRANCAIS.pdf:** Curriculum edité pour la recherche d'une altenance en Bioinformatique, en français
 
