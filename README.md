@@ -9,3 +9,7 @@
 *En Français:*
 * **Beraud_Bioinformatique_CV_FRANCAIS.pdf:** Curriculum edité pour la recherche d'une altenance en Bioinformatique, en français
 
+## Programs
+Some example of various macros, scripts, programs coded in Python, VBA for Excel, R and R markdown during early career.
+
+
