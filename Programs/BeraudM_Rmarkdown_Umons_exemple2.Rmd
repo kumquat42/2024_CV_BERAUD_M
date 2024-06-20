@@ -1,0 +1,70 @@
+---
+title: "170525-R SWATH all"
+output: word_document
+---
+output: word_document
+---
+
+```{r,echo=FALSE}
+# Umons _ Analyse statistique automatisée des résultats de métaprotéomique comparée (+/- métal) par entrée protéine. 
+```
+
+```{r error=TRUE,echo=FALSE}
+rm (list = ls())
+require(car)
+library(PMCMR)
+
+doss<-read.csv2("C:/Users/Utilisateur/Documents/R/MOOC_FUN_StatR/160215.csv",header=TRUE,sep=";",dec=".")
+
+#Sample	      Assay	            Species	Assay2	Value
+#Amino_Acids  Amino_AcidsRALME	RALME	  NoZ-t1	3820225.184
+
+
+bou3=levels(doss$Species)
+k=bou3[1]
+tab1<-data.frame()
+
+for (k in bou3){
+
+
+    doss_species<-data.frame(doss$Assay[doss$Species==k],doss$Sample[doss$Species==k],doss$Assay2[doss$Species==k],doss$Value[doss$Species==k])
+  colnames(doss_species)<- c("Assay","Sample","Assay2","Value")
+ 
+  bou2=levels(doss_species$Sample)
+  i=bou2[1]
+  
+  print(k)  
+  
+for (i in bou2){
+  
+ 
+  test<-doss_species$Value[doss_species$Sample==i][1]
+    if (is.na(test) ==FALSE) {
+     
+    
+  tab<-data.frame(doss_species[which(doss_species$Sample==i),])
+  boxplot(tab$Value~tab$Assay2,cex.axis=0.7,main=c(k,i))
+
+  print(shapiro.test(tab$Value)$p.value)   
+  print(bartlett.test(tab$Value,tab$Assay2)$p.value)
+  
+    
+  print("Normality")
+   fit <- aov(tab$Value[tab$Sample==i]~tab$Assay2[tab$Sample==i]) # y est la variable numérique et A indique les groupes
+  print(cbind(summary(fit)[[1]][["F value"]][1],summary(fit)[[1]][["Pr(>F)"]][1]))
+  print(pairwise.t.test(tab$Value,tab$Assay2,dist="Tukey",na.action=na.omit))
+
+  
+  print("No normality")
+  print(kruskal.test(tab$Value~tab$Assay2,na.action=na.omit)$p.value)
+  print(posthoc.kruskal.nemenyi.test(tab$Value,tab$Assay2,dist="Tukey",na.action=na.omit))
+
+    }
+ 
+}
+   
+}
+  colnames(tab1)<- c("Species","Category","shapiro","bartlett","anova","kruskal")
+  print(tab1)
+  
+```

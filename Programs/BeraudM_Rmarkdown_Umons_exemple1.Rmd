@@ -1,0 +1,138 @@
+---
+title: "160127-Multiple tests"
+output: word_document
+
+---
+
+```{r,echo=FALSE}
+# Umons _ Rapport d'analyse statistique automatisé pour dégrossissage des résultats de métaprotéomique et de qPCR. 
+```
+
+Strain : Sb
+
+```{r,echo=FALSE}
+require(car)
+
+doss<-read.csv2("C:/Users/Utilisateur/Documents/R/MOOC_FUN_StatR/151105-Q-cm.csv",header=TRUE,sep=";",dec=".")
+
+
+```
+Summary
+
+```{r,echo=FALSE}
+
+summary(doss)
+
+tab<-data.frame(table(doss$ASSAY),tapply(doss$QUANTITY,doss$ASSAY,mean),tapply(doss$QUANTITY,doss$ASSAY,sd))
+tab<-tab[,2:4]
+names(tab)<-c("Freq","Mean","Sd")
+bou<-max(tab$Mean+2*tab$Sd)
+
+tab1<-tab
+tab1$Mean<-format(tab$Mean,scientific=TRUE,digits=3)
+tab1$Sd<-format(tab$Sd,scientific=TRUE,digits=3)
+tab1
+
+par(mfcol=c(1,2))
+boxplot(doss$QUANTITY~doss$ASSAY,xlab="Zinc concentration (mM)",ylab="Quantity (# ARN 16S)")
+barplot(tab$Sd+tab$Mean,width=1,space=3,col="white")
+#,ylim=c(0,bou))
+barplot(tab$Mean,,width=1,space=3,col="black",names.arg=FALSE,add=TRUE)
+
+
+```
+
+Normality tests for Quantity and residus
+
+```{r,echo=FALSE}
+
+residu=doss$QUANTITY-ave(doss$QUANTITY)
+par(mfcol=c(1,2))
+
+qq.plot(doss$QUANTITY,distribution="norm",envelope=0.95,col="black",main="16S Quantity normality")
+qq.plot(residu,distribution="norm",envelope=0.95,col="black",main="Residu normality")
+```
+
+Normality Tests: Shapiro-Wilk
+If Shapiro-Wilk p-value > 0.05 => Normality, else, use Wilcoxon
+
+```{r,echo=FALSE}
+
+shapiro.test(doss$QUANTITY)
+shapiro.test(residu)
+
+```
+
+Test d'homoscédasticité: Bartlett test
+If p-value>0.05, then run ANOVA, else run Kruskal- Wallis
+
+```{r,echo=FALSE}
+
+bartlett.test(QUANTITY~ASSAY,data=doss)
+```
+
+Square deviation:
+```{r,echo=FALSE}
+tapply(doss$QUANTITY,doss$ASSAY,sd)
+
+```
+
+Statistical test: Anova
+
+```{r,echo=FALSE}
+lm(QUANTITY~ASSAY,data=doss)
+drop1(lm(QUANTITY~ASSAY,data=doss),.~.,test="F")
+aov(lm(QUANTITY~ASSAY,data=doss))
+aov(QUANTITY~ASSAY,data=doss)
+drop1(aov(QUANTITY~ASSAY,data=doss),.~.,test="F")
+bou2<-aov(lm(QUANTITY~ASSAY,data=doss))
+anova(aov(QUANTITY~ASSAY,data=doss))
+
+
+wilcox.test(doss$QUANTITY~doss$ZINC)
+library(stats)
+TukeyHSD(lm(QUANTITY~ASSAY,data=doss))
+
+```
+
+Post-hoc ANOVA
+Multiple T-test or Test de Tuckey ?
+
+```{r,echo=FALSE}
+
+
+pairwise.t.test(doss$QUANTITY,doss$ASSAY,p.adj="bonferroni",paired=FALSE)
+
+library(stats)
+anovov<-aov(QUANTITY~ASSAY,data=doss)
+TukeyHSD(aov(QUANTITY~ASSAY,data=doss))
+
+
+```
+
+Statistical test: Kruskal- Wallis
+
+```{r,echo=FALSE}
+kruskal.test(doss$QUANTITY~doss$ASSAY)
+```
+
+
+Post-hoc Kruskal-Wallis
+Dunn or Nemenyi ? and co test (by ranking)
+
+```{r,echo=FALSE}
+library(PMCMR)
+
+posthoc.kruskal.nemenyi.test(doss$QUANTITY,doss$ASSAY,dist="Tukey")
+
+#posthoc.kruskal.dunn.test(doss$QUANTITY,doss$ASSAY,p.adjust.method="bonferroni")
+#same stuffs more or less... A bit less OK for some ^^
+
+
+#dunn.test provides Dunn's (1964) z test approximation to a rank sum test employing both the same ranks used in the Kruskal-Wallis test, and the pooled variance estimate implied by the null hypothesis of the Kruskal-Wallis (akin to using the pooled variance to calculate t test statistics following an ANOVA).
+
+#By contrast, the Kruskal-Nemenyi test as implemented in posthoc.kruskal.nemenyi.test is based on either the Studentized range distribution, or the ??2 distribution depending on user choice.
+
+```
+
+
